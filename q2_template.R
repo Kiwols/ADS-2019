@@ -12,15 +12,19 @@ response_parsed <- fromJSON(getURL(URL,ssl.verifyhost = 0L, ssl.verifypeer = 0L)
 data.class(response_parsed)
 
 
-print(get(response_parsed))
+print(response_parsed$items[[12]])
       
 
 
 
 #a)
 # Your code
-data.class(response_parsed)
-length(response_parsed)
+getItems <- function(items){
+ data.frame( Title = c( ifelse(is.null(items$volumeInfo$title),"-",items$volumeInfo$title))
+             Autor = c( ifelse(is.null(items$volumeInfo$authors),"-",items$volumeInfo$authors))
+             Publishing_Date = c( ifelse(is.null(items$volumeInfo$title),"-",items$volumeInfo$title))
+             Rating = c( ifelse(is.null(items$volumeInfo$title),"-",items$volumeInfo$title)))
+}
 
 
 #b)
