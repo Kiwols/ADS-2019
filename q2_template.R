@@ -7,24 +7,31 @@
 library(RCurl)
 library(RJSONIO)
 library(dplyr)
+library(purrr)
 URL = "https://www.googleapis.com/books/v1/volumes?q=george+r+r+martin&maxResults=40"
 response_parsed <- fromJSON(getURL(URL,ssl.verifyhost = 0L, ssl.verifypeer = 0L))
 
 data.class(response_parsed)
 
 
-print(getItems(response_parsed$items[[15]]))
-      
-print(map_df(response_parsed$items,getItems))
+print(response_parsed$items)
 
+#Aufgabe b      
+#print(map_df(response_parsed$items,getItems))
+
+#Aufgabe c 
+#print(getBookList(25))
+
+#Aufgabe d
+print(getBookSalesInfo("KtxRDwAAQBAJ"))
 
 #a)
 # Your code
 
 
 #b)
-# Your code
 
+#kreiert ein data frame mit den Spalten Title,Autor,Publishing_Date,Rating aus der Liste items
 getItems <- function(items){
   data.frame( Title = c( ifelse(is.null(items$volumeInfo$title),"-",substring(items$volumeInfo$title,1,20))),
               Autor = c( ifelse(is.null(items$volumeInfo$authors),"-",items$volumeInfo$authors)),
@@ -34,15 +41,26 @@ getItems <- function(items){
 }
 
 
+
 #c) 
 getBookList = function(numberOfItems) {
- 
-   # Your code
-
+  
+# dplyr pipe with the functions  slice()//selektiere von x:y, arrange()//sortiere
+map_df(response_parsed$items,getItems) %>% slice(1:numberOfItems) %>%  arrange(Publishing_Date,Title)
   
 }
 
 #d)
-#getBookSalesInfo = function(response) {
-  # Your code
-#}
+getBookSalesInfo = function(response) {
+  
+  map_df(response_parsed$items,getItemsForBaying) %>% filter(id == response) 
+  
+}
+
+getItemsForBaying <- function(items){
+  data.frame( id = c( ifelse(is.null(items$id),"-",items$id)),
+              Available  = c( ifelse(is.null(items$volumeInfo$infoLink),"-",items$volumeInfo$infoLink)),
+              Price  = c( ifelse(is.null(as.factor(items$saleInfo$listPrice$amount)),"-",as.factor(items$saleInfo$listPrice$amount))),
+              Link = c( ifelse(is.null(items$saleInfo$buyLink),"-",items$saleInfo$buyLink)))
+  
+}
