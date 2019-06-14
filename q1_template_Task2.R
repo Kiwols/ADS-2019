@@ -7,6 +7,7 @@ library(rvest)
 library(tidyverse)
 library(RcppRoll)
 library(purrr)
+library(stringr)
 
 #url of wegpage
 url = "http://quotes.toscrape.com/"
@@ -78,8 +79,11 @@ html_nodes(".quote") -> colm
 
 
 #call function getQuoteInformation on all list elements from colm
-map_df(colm,getQuoteInformation) -> result
-#print(result)
+map_df(colm,getQuoteInformation) -> resultT1
+#print(resultT1)
+
+
+
 
 #Aufgabe2
 quotesPages = list(length = 10)
@@ -100,19 +104,63 @@ for (i in 1:10){
 }
 #print(quotesPages)
 
+
+
+
+
+
 #Aufgabe3
 
-getDetailInformationOfAuthors = function(url){
+getAuthorUrl = function(url){
+#get the Url of the Author detal page 
+  
   url %>%
   read_html() %>%
   html_nodes(".quote span a") %>%
-  html_attr("href")  -> AuthorURLs
+  html_attr("href") %>% 
+  unique()-> AuthorURLs
   
+ 
+  print(AuthorURLs)
+  
+  #past the string "http://quotes.toscrape.com/" bevor each String in AuthorURLs
+  paste0("http://quotes.toscrape.com/",AuthorURLs,sep="")
 }
 
 
-getDetailInformationOfAuthors(url)->authorurls
+getAuthorUrl(url)->authorurls
 print(authorurls)
 
 #Aufgabe 4
 
+getAuthorInformation = function (url){
+ #get the information of an Author of his Autor detail page
+  
+  url %>%
+    read_html() -> page
+  
+  page %>%
+    html_nodes(".author-description") %>%
+    html_text() -> authorDescription
+  
+  page %>%
+    html_nodes(".author-title") %>%
+    html_text() -> authorName
+  
+  page %>%
+    html_nodes(".author-born-date") %>%
+    html_text() -> bornDate
+  
+  data.frame(authorName = authorName, authorDescription = authorDescription, bornDate = bornDate) -> result
+}
+
+map_df(authorurls,getAuthorInformation) -> resultT4
+
+
+#Aufgabe 5.1
+
+
+str_split(resultT4[[3]]," ", simplify = TRUE) -> resultT5
+
+
+print(resultT5)
