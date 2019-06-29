@@ -4,7 +4,7 @@
 # Name: Your Name
 # Matrikelnummer: Your matriculation number
 
-library(RCurl)
+/library(RCurl)
 library(RJSONIO)
 library(dplyr)
 library(purrr)

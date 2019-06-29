@@ -86,7 +86,7 @@ map_df(colm,getQuoteInformation) -> resultT1
 
 
 #Aufgabe2
-quotesPages = list(length = 10)
+quotesOverAllPages = list(length = 10)
 #iterates throw each page
 for (i in 1:10){
 
@@ -100,9 +100,10 @@ for (i in 1:10){
   
   map_df(colm2,getQuoteInformation) -> newPage
   #saves each informations of on page into the df of all page Infomations
-  quotesPages [[i]] = newPage
+  quotesOverAllPages [[i]] = newPage
 }
-#print(quotesPages)
+
+#print(quotesOverAllPages)
 
 
 
@@ -159,8 +160,87 @@ map_df(authorurls,getAuthorInformation) -> resultT4
 
 #Aufgabe 5.1
 
+#seperates the 3 colom by " " and put it into new colm
+str_split(resultT4[[3]]," ", simplify = TRUE) -> birthSep
 
-str_split(resultT4[[3]]," ", simplify = TRUE) -> resultT5
+mutate()
+
+#change the colnnames to Month, Day and Year
+colnames(birthSep) <- c("Month","Day","Year")
+
+#Delete the 3 colom
+resultT4[[3]] <- NULL
+
+#put both data frames together
+data.frame(resultT4,birthSep) -> authorInformation_df
 
 
-print(resultT5)
+CountAthoursByBirthYear = function(dataFrame,from,until){
+  
+  #select colm Year, filter where Year > from and Year <until, count how many 
+  dataFrame %>%
+    select(Year) %>%
+    filter(as.numeric(levels(Year))[Year] > from) %>%
+    filter(as.numeric(levels(Year))[Year] < until) %>%
+    count() -> amount
+}
+
+sprintf( "Es gibt %s Autoren die in den Jahren von 1800-1899 geboren sind.", CountAthoursByBirthYear(authorInformation_df,1800,1899))
+
+
+#Aufgabe 5.2
+
+#1
+
+getAuthorWithMostQuotes = function(DataList){
+  
+  #group by authors, count, and sort descendent
+    data.frame(DataList) %>%
+    group_by(authors)  %>%
+     count() %>%
+      arrange(desc(n))-> result
+
+}
+
+  map_df(quotesOverAllPages,getAuthorWithMostQuotes)%>%
+  arrange(desc(n))%>%
+    head(1) -> mostQuotsAuthor 
+
+sprintf( "Der Autor mit den meisten Quots ist %s", mostQuotsAuthor[1,1])
+
+
+
+#2
+
+averageQuotsOfAuthors = function (DataList){
+  
+  data.frame(DataList) %>%
+    group_by(authors)  %>%
+    count() %>%
+    summarize(averige = mean(n)) %>% 
+    select(averige) %>%
+    colMeans() -> result
+print(result)
+}
+#take the row mean 
+map_df(quotesOverAllPages,averageQuotsOfAuthors)%>% 
+       rowMeans() -> averigeOfQuotsOverAllPages
+
+sprintf( "Der Durchschnitt an Quots pro Autor ist %s", averigeOfQuotsOverAllPages)
+
+
+
+#3
+findQuoteByTag = function (DataList){
+  
+  data.frame(DataList) %>%
+    filter(grepl("life", tag)) -> result
+    
+}
+
+
+# FRAGE:wie kann man in einer map funktion der anzuwendenden funktion mehrere Parameter übergeben? 
+map_df(quotesOverAllPages,findQuoteByTag) -> QuotesWithSpecialTag
+
+
+#Aufgabe 3
